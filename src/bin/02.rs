@@ -14,7 +14,7 @@ pub fn part_one(input: &str) -> Option<u32> {
     let games = input.split("\n");
     
     for game in games{
-        // let game_num = game.chars().nth(5).unwrap().to_digit(10).unwrap();
+
         let game_split: Vec<&str> = game.split(" ").collect();
 
         let mut game_num = game_split[1];
@@ -25,12 +25,9 @@ pub fn part_one(input: &str) -> Option<u32> {
 
         let game_num:u32 = game_num.parse().unwrap();
 
+        let subgames = game[6+game_num_len..].split(";");
 
-        println!("GAME ----- {}    {}",game,game_num);
-
-        let subgames = game[7..].split(";");
-
-        if check_all_subgames(game_num_len, subgames, red_max, green_max, blue_max){
+        if check_all_subgames(subgames, red_max, green_max, blue_max){
             total = total + game_num;
         }
         else{
@@ -41,19 +38,31 @@ pub fn part_one(input: &str) -> Option<u32> {
 
 }
 
-fn check_all_subgames(game_num_length:usize, subgames: Split<'_, &str>, red_max:u32, green_max:u32, blue_max:u32) -> bool{
+fn check_all_subgames(subgames: Split<'_, &str>, red_max:u32, green_max:u32, blue_max:u32) -> bool{
     
     let mut g = Game::new();
     
     for subgame in subgames{
-
-        println!("SUBGAME ----- {}",subgame);
         
-        g.parse_subgame(subgame,game_num_length);
+        g.parse_subgame(subgame);
     }
 
     g.check_max(red_max, green_max, blue_max)
 }
+
+
+fn calc_all_subgames_power(subgames: Split<'_, &str>) -> u32{
+    
+    let mut g = Game::new();
+    
+    for subgame in subgames{
+        
+        g.parse_subgame(subgame);
+    }
+
+    g.get_power()
+}
+
 
 struct Game{
     red:u32,
@@ -66,13 +75,11 @@ impl Game {
         Game { red: 0, green: 0, blue: 0 }
     }
 
-    fn parse_subgame(&mut self, subgame:&str, game_num_length:usize) {
+    fn parse_subgame(&mut self, subgame:&str) {
 
         let mut stored_val:u32 = 0;
         
-        for (ind, vals) in subgame[game_num_length..].split(" ").enumerate(){
-            
-            println!("{vals}");
+        for (ind, vals) in subgame[1..].split(" ").enumerate(){
 
             if ind % 2 == 0{
                 stored_val = vals.parse().unwrap();
@@ -105,10 +112,39 @@ impl Game {
             return false
         }
     }
+
+    fn get_power(&self)->u32{
+        self.red*self.blue*self.green
+    }
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
-    None
+    
+    let red_max = 12;
+    let green_max = 13;
+    let blue_max = 14;
+    
+    let mut total = 0;
+    
+    let games = input.split("\n");
+    
+    for game in games{
+
+        let game_split: Vec<&str> = game.split(" ").collect();
+
+        let mut game_num = game_split[1];
+
+        let game_num: &str = &game_num[..game_num.len()-1];
+
+        let game_num_len = game_num.len();
+
+        let game_num:u32 = game_num.parse().unwrap();
+
+        let subgames = game[6+game_num_len..].split(";");
+
+        total = total +  calc_all_subgames_power(subgames);
+    }
+    Some(total)
 }
 
 #[cfg(test)]
