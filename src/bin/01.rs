@@ -3,29 +3,23 @@ use std::collections::HashMap;
 advent_of_code::solution!(1);
 
 pub fn part_one(input: &str) -> Option<u32> {
-    
-    let total: u32 = input.split("\n")
-                                .map(|line|{
-                                    TwoDigitNum::new()
-                                    .solve_numeric(line)
-                                    .get_combined()
-                                })
-                                .sum();
+    let total: u32 = input
+        .split("\n")
+        .map(|line| TwoDigitNum::new().solve_numeric(line).get_combined())
+        .sum();
     Some(total)
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
-    
     let map_f_letter: HashMap<char, Vec<usize>> = HashMap::from([
         ('z', vec![4]),
         ('o', vec![3]),
-        ('t', vec![3,5]),
+        ('t', vec![3, 5]),
         ('f', vec![4]),
-        ('s', vec![3,5]),
+        ('s', vec![3, 5]),
         ('e', vec![5]),
         ('n', vec![4]),
     ]);
-
 
     let map_word: HashMap<&str, char> = HashMap::from([
         ("zero", '0'),
@@ -37,97 +31,93 @@ pub fn part_two(input: &str) -> Option<u32> {
         ("six", '6'),
         ("seven", '7'),
         ("eight", '8'),
-        ("nine", '9')
+        ("nine", '9'),
     ]);
-    
-    let total: u32 = input.split("\n")
-                                .map(|line|{
-                                    TwoDigitNum::new()
-                                    .solve_alphanumeric(&line, &map_f_letter, &map_word)
-                                    .get_combined()
-                                })
-                                .sum();
+
+    let total: u32 = input
+        .split("\n")
+        .map(|line| {
+            TwoDigitNum::new()
+                .solve_alphanumeric(&line, &map_f_letter, &map_word)
+                .get_combined()
+        })
+        .sum();
 
     Some(total)
 }
 
-
-
-struct TwoDigitNum{
+struct TwoDigitNum {
     first: Option<char>,
-    last: Option<char>
+    last: Option<char>,
 }
 
 impl TwoDigitNum {
-    fn new() -> Self{
-        TwoDigitNum { first: None, last: None}
+    fn new() -> Self {
+        TwoDigitNum {
+            first: None,
+            last: None,
+        }
     }
 
-    fn get_combined(&self) -> u32{
-        let x = format!("{}{}",self.first.unwrap(),self.last.unwrap())
+    fn get_combined(&self) -> u32 {
+        let x = format!("{}{}", self.first.unwrap(), self.last.unwrap())
             .parse()
             .unwrap();
         x
-        
     }
 
-    fn solve_numeric(&mut self, line: &str)-> &Self{
-        
-        for c in line.chars(){
-            if c.is_numeric(){
+    fn solve_numeric(&mut self, line: &str) -> &Self {
+        for c in line.chars() {
+            if c.is_numeric() {
                 self.assign_numeric(&c);
             }
         }
         self
     }
 
-    fn solve_alphanumeric(&mut self, line: &str, map_f_letter: &HashMap<char, Vec<usize>>, map_word: &HashMap<&str, char>)-> &Self{
-
+    fn solve_alphanumeric(
+        &mut self,
+        line: &str,
+        map_f_letter: &HashMap<char, Vec<usize>>,
+        map_word: &HashMap<&str, char>,
+    ) -> &Self {
         let input_len = line.len();
-        
-        for (ind,c) in line.chars().enumerate(){
 
-            if c.is_numeric(){
+        for (ind, c) in line.chars().enumerate() {
+            if c.is_numeric() {
                 self.assign_numeric(&c)
-            }
-            
-            else{
-                match map_f_letter.get(&c){
-                    Some(lengths)=> {
-                        for word_length in lengths{
-                            if ind + word_length <= input_len{
-                                let parsed_word = &line[ind..ind+word_length];
-                                match map_word.get(parsed_word){
+            } else {
+                match map_f_letter.get(&c) {
+                    Some(lengths) => {
+                        for word_length in lengths {
+                            if ind + word_length <= input_len {
+                                let parsed_word = &line[ind..ind + word_length];
+                                match map_word.get(parsed_word) {
                                     Some(derived_c) => {
                                         self.assign_numeric(&derived_c);
-                                    },
-                                    None => continue
+                                    }
+                                    None => continue,
                                 }
-                            }
-                            else{
+                            } else {
                                 continue;
                             }
                         }
-
-                    },
-                    None=> continue
+                    }
+                    None => continue,
                 };
             }
         }
         self
     }
 
-    fn assign_numeric(&mut self, c: &char){
-        if self.first.is_none(){
+    fn assign_numeric(&mut self, c: &char) {
+        if self.first.is_none() {
             self.first = Some(*c);
             self.last = Some(*c);
-        }
-        else {
+        } else {
             self.last = Some(*c)
         }
     }
-
-
 }
 
 #[cfg(test)]
